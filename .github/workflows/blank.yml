@@ -1,85 +1,77 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Java CI with Maven
+name: CI/CD Java - Pipeline
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
+
+env:
+  RECIPIENT_EMAIL: ${{ secrets.TARGET_EMAIL }}
 
 jobs:
+
+  # JOB 1: Execução dos Testes
+  tests:
+    runs-on: ubuntu-latest
+    name: Executar Testes
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Instalar Java e Maven
+        run: |
+          sudo apt update
+          sudo apt install -y maven openjdk-17-jdk
+          java -version
+          mvn -version
+
+      - name: Executar Testes com Maven
+        run: mvn test
+
+      - name: Salvar Relatório de Testes
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes
+          path: target/surefire-reports/
+
+  # JOB 2: Empacotamento do Projeto
   build:
-
     runs-on: ubuntu-latest
-
+    name: Build do Projeto
+    needs: tests
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-      - name: Build with Maven
-        run: |
-          cd Actions
-          mvn clean install
+      - name: Checkout do código
+        uses: actions/checkout@v3
 
-      - name: Upload a Build Artifact (JAR)
+      - name: Instalar Java e Maven
+        run: |
+          sudo apt update
+          sudo apt install -y maven openjdk-17-jdk
+
+      - name: Build do Projeto com Maven
+        run: mvn clean package
+
+      - name: Salvar Artefato (JAR)
         uses: actions/upload-artifact@v4
         with:
-          name: arquivo jar
-          path: Actions/target/*.jar
+          name: pacote-jar
+          path: target/*.jar
 
-  teste:
-
-    needs: build
-
+  # JOB 3: Enviar E-mail (em paralelo)
+  notify:
     runs-on: ubuntu-latest
-
+    name: Notificação por E-mail
+    needs: [tests, build]
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-      - name: Test with Maven
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Instalar mailutils
         run: |
-          cd Actions
-          mvn clean test site
+          sudo apt update
+          sudo apt install -y mailutils
 
-
-      - name: Upload a Test Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: relatorio-teste
-          path: Actions/target/site/
-
-  notification:
-
-    needs: teste
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-      - name: Notification
-        run: sh scripts/shell.sh
-
-
+      - name: Enviar E-mail
+        run: |
+          echo "Pipeline executado com sucesso!" | mail -s "CI/CD - Notificação de Pipeline" $RECIPIENT_EMAIL
