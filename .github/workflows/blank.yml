@@ -77,4 +77,4 @@ jobs:
       - name: Executar script de notificação
         run: |
           chmod +x scripts/shell.sh
-          .scripts/shell.sh
+          ./scripts/shell.sh
