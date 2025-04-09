@@ -1,4 +1,4 @@
-name: CI/CD Java - Pipeline
+name: Java - Pipeline
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
 
 jobs:
 
-  # JOB 1: Execução dos Testes
+  #Execução dos Testes
   tests:
     runs-on: ubuntu-latest
     name: Executar Testes
@@ -19,12 +19,15 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Instalar Java e Maven
+      - name: Instalar Java 23 manualmente
         run: |
-          sudo apt update
-          sudo apt install -y maven openjdk-23-jdk
-          java -version
-          mvn -version
+            sudo apt-get update
+            sudo apt-get install -y wget tar
+            wget https://download.java.net/java/early_access/jdk23/6/GPL/openjdk-23-ea+6_linux-x64_bin.tar.gz
+            mkdir -p /opt/jdk
+            tar -xzf openjdk-23-ea+6_linux-x64_bin.tar.gz -C /opt/jdk
+            echo "JAVA_HOME=/opt/jdk/jdk-23" >> $GITHUB_ENV
+            echo "/opt/jdk/jdk-23/bin" >> $GITHUB_PATH
 
       - name: Executar Testes com Maven
         run: mvn test
@@ -35,7 +38,7 @@ jobs:
           name: relatorio-testes
           path: target/surefire-reports/
 
-  # JOB 2: Empacotamento do Projeto
+  #Empacotamento do Projeto
   build:
     runs-on: ubuntu-latest
     name: Build do Projeto
@@ -44,10 +47,15 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Instalar Java e Maven
+      - name: Instalar Java 23 manualmente
         run: |
-          sudo apt update
-          sudo apt install -y maven openjdk-23-jdk
+            sudo apt-get update
+            sudo apt-get install -y wget tar
+            wget https://download.java.net/java/early_access/jdk23/6/GPL/openjdk-23-ea+6_linux-x64_bin.tar.gz
+            mkdir -p /opt/jdk
+            tar -xzf openjdk-23-ea+6_linux-x64_bin.tar.gz -C /opt/jdk
+            echo "JAVA_HOME=/opt/jdk/jdk-23" >> $GITHUB_ENV
+            echo "/opt/jdk/jdk-23/bin" >> $GITHUB_PATH
 
       - name: Build do Projeto com Maven
         run: mvn clean package
@@ -58,7 +66,7 @@ jobs:
           name: pacote-jar
           path: target/*.jar
 
-  # JOB 3: Enviar E-mail (em paralelo)
+  #Enviar E-mail (em paralelo)
   notify:
     runs-on: ubuntu-latest
     name: Notificação por E-mail
