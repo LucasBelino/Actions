@@ -19,15 +19,12 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Instalar Java 23 manualmente
+      - name: Instalar SDKMAN + Java 23
         run: |
-            sudo apt-get update
-            sudo apt-get install -y wget tar
-            wget https://download.java.net/java/early_access/jdk23/6/GPL/openjdk-23-ea+6_linux-x64_bin.tar.gz
-            mkdir -p /opt/jdk
-            tar -xzf openjdk-23-ea+6_linux-x64_bin.tar.gz -C /opt/jdk
-            echo "JAVA_HOME=/opt/jdk/jdk-23" >> $GITHUB_ENV
-            echo "/opt/jdk/jdk-23/bin" >> $GITHUB_PATH
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 23.ea.6-open
+          java -version
 
       - name: Executar Testes com Maven
         run: mvn test
@@ -47,15 +44,12 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Instalar Java 23 manualmente
+      - name: Instalar SDKMAN + Java 23
         run: |
-            sudo apt-get update
-            sudo apt-get install -y wget tar
-            wget https://download.java.net/java/early_access/jdk23/6/GPL/openjdk-23-ea+6_linux-x64_bin.tar.gz
-            mkdir -p /opt/jdk
-            tar -xzf openjdk-23-ea+6_linux-x64_bin.tar.gz -C /opt/jdk
-            echo "JAVA_HOME=/opt/jdk/jdk-23" >> $GITHUB_ENV
-            echo "/opt/jdk/jdk-23/bin" >> $GITHUB_PATH
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 23.ea.6-open
+          java -version
 
       - name: Build do Projeto com Maven
         run: mvn clean package
