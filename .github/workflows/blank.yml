@@ -30,14 +30,14 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: |
-          cd Aula-GitHub-Actions
+          cd Actions
           mvn clean install
 
       - name: Upload a Build Artifact (JAR)
         uses: actions/upload-artifact@v4
         with:
           name: arquivo jar
-          path: Actions/src/*.jar
+          path: Actions/target/*.jar
 
   teste:
 
@@ -55,14 +55,15 @@ jobs:
           cache: maven
       - name: Test with Maven
         run: |
-          cd Aula-GitHub-Actions
+          cd Actions
           mvn clean test site
+
 
       - name: Upload a Test Report
         uses: actions/upload-artifact@v4
         with:
           name: relatorio-teste
-          path: Aula-GitHub-Actions/target/site/
+          path: Actions/target/site/
 
   notification:
 
